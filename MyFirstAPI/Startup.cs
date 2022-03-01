@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using MyFirstAPI.EmployeeData;
+using MyFirstAPI.EmployeeData.MiddlewareExtensions;
 using MyFirstAPI.Model;
 using System;
 using System.Collections.Generic;
@@ -30,9 +31,7 @@ namespace MyFirstAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<ExceptionHandlingMiddleware>();
             services.AddControllers();
-            services.AddTransient<CustomMiddleware1>();
             services.AddDbContextPool<EmployeeContext>(options => options.UseSqlServer(Configuration.GetConnectionString("EmployeeContextConnectionString")));
             services.AddScoped<IEmployeeData, SqlEmployeeData>();
             services.AddSwaggerGen(c =>
@@ -44,21 +43,6 @@ namespace MyFirstAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            //app.Use(async (context, next) =>
-            //{
-            //    await context.Response.WriteAsync("Incoming Request from Middleware1.\n");
-            //    await context.Response.WriteAsync("Incoming Request from Middleware1 without using next().\n");
-            //    await next();
-            //    await context.Response.WriteAsync("Outgoing Response from Middleware1.\n");
-            //});
-
-            //app.UseMiddleware<CustomMiddleware1>();
-
-            //app.Run(async (context) =>
-            //{
-            //    await context.Response.WriteAsync("Run Middleware Component.\n");
-            //});
-
 
             if (env.IsDevelopment())
             {
@@ -71,7 +55,7 @@ namespace MyFirstAPI
 
             app.UseRouting();
 
-            app.UseMiddleware<ExceptionHandlingMiddleware>();
+            app.UseExceptionHandlingMiddleware();
 
             app.UseAuthorization();
 
@@ -79,6 +63,9 @@ namespace MyFirstAPI
             {
                 endpoints.MapControllers();
             });
+            app.UseCustomMiddleware1();
+            app.UseCustomMiddleware2();
+            app.RunCustomMiddleware3();
         }
     }
 }
